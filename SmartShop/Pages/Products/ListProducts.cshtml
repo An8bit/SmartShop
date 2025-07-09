@@ -1,0 +1,114 @@
+﻿@page
+@model SmartShop.Web.Models.ProductViewModel
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+}
+
+<div class="container-fluid">
+    <h1 class="mt-4">Quản lý sản phẩm</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+        <li class="breadcrumb-item active">Sản phẩm</li>
+    </ol>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-table me-1"></i>
+                Danh sách sản phẩm
+            </div>
+            <a asp-page="./Create" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Thêm mới
+            </a>
+        </div>
+        <div class="card-body">
+            @if (Model.Products == null)
+            {
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+            }
+            else if (!Model.Products.Any())
+            {
+                <div class="alert alert-info">
+                    Không có sản phẩm nào. Hãy <a asp-page="./Create">thêm sản phẩm mới</a>.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover" id="productsTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Giá</th>
+                                <th>Danh mục</th>
+                                <th>Ngày tạo</th>
+                                <th style="width: 150px">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var product in Model.Products)
+                            {
+                                <tr>
+                                    <td>@product.Id</td>
+                                    <td>@product.Name</td>
+                                    <td>@product.Price.ToString("N0") VND</td>
+                                    <td>@product.CategoryName</td>
+                                    <td>@product.CreatedDate.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-page="./Details" asp-route-id="@product.Id" class="btn btn-info btn-sm">
+                                                <i class="fas fa-info-circle"></i>
+                                            </a>
+                                            <a asp-page="./Edit" asp-route-id="@product.Id" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form method="post" asp-page-handler="Delete" asp-route-id="@product.Id" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');" style="display:inline;">
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#productsTable').DataTable({
+                responsive: true,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/vi.json'
+                }
+            });
+        });
+    </script>
+}

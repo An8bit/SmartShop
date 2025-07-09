@@ -1,6 +1,6 @@
 namespace SmartShop.Core.Entities
 {
-    public class Product : IEntity, IAuditable
+    public class Product : BaseEntity
     {
         public int Id { get; set; }
         public DateTime CreatedDate { get; set; }
