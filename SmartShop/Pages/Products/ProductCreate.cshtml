@@ -1,4 +1,765 @@
-﻿@page
-@model SmartShop.Web.Models.ProductViewModel
+﻿@page "/create-product"
+@model SmartShop.Web.Pages.Products.ProductCreateModel
 @{
+    ViewData["Title"] = "Thêm sản phẩm mới";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Page Header -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-plus-circle text-primary me-2"></i>
+        Thêm sản phẩm mới
+    </h1>
+    <div>
+        <a href="/list-products" class="btn btn-secondary btn-sm shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50 me-1"></i>
+            Quay lại danh sách
+        </a>
+    </div>
+</div>
+
+<!-- Alert Messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<form method="post" id="productForm">
+    <div class="row">
+        <!-- Product Information Card -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Thông tin sản phẩm
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="Product.Name" class="form-label fw-bold">Tên sản phẩm <span class="text-danger">*</span></label>
+                        <input asp-for="Product.Name" class="form-control" placeholder="Nhập tên sản phẩm...">
+                        <span asp-validation-for="Product.Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Product.Description" class="form-label fw-bold">Mô tả sản phẩm</label>
+                        <textarea asp-for="Product.Description" class="form-control" rows="4" placeholder="Nhập mô tả chi tiết về sản phẩm..."></textarea>
+                        <span asp-validation-for="Product.Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Product.Price" class="form-label fw-bold">Giá sản phẩm (VND) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input asp-for="Product.Price" type="number" class="form-control" placeholder="0" min="0" step="1000">
+                                <span class="input-group-text">VND</span>
+                            </div>
+                            <span asp-validation-for="Product.Price" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Product.CategoryId" class="form-label fw-bold">Danh mục <span class="text-danger">*</span></label>
+                            <select asp-for="Product.CategoryId" class="form-select">
+                                <option value="0">Chọn danh mục...</option>
+                                @if (Model.Categories != null && Model.Categories.Any())
+                                {
+                                    @foreach (var category in Model.Categories)
+                                    {
+                                        <option value="@category.CategoryId">@category.CategoryName</option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option value="1">Nam</option>
+                                    <option value="2">Nữ</option>
+                                    <option value="3">Unisex</option>
+                                    <option value="4">Phụ kiện</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Product.CategoryId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Product.ImageUrl" class="form-label fw-bold">URL hình ảnh</label>
+                        <input asp-for="Product.ImageUrl" class="form-control" placeholder="https://example.com/image.jpg" onchange="previewImage()">
+                        <span asp-validation-for="Product.ImageUrl" class="text-danger"></span>
+                        <div class="form-text">Nhập URL của hình ảnh sản phẩm</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variants Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-layer-group me-2"></i>
+                        Biến thể sản phẩm
+                    </h6>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addVariant()">
+                        <i class="fas fa-plus me-1"></i>
+                        Thêm biến thể
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="variants-container">
+                        <!-- Variants will be added here -->
+                    </div>
+                    <div class="text-muted small">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Thêm các biến thể khác nhau của sản phẩm (màu sắc, kích thước, số lượng)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview & Actions Card -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-eye me-2"></i>
+                        Xem trước
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <img id="image-preview" src="https://via.placeholder.com/200x200?text=Hình+ảnh+sản+phẩm" 
+                             class="img-fluid rounded shadow" style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                    </div>
+                    <h5 id="name-preview" class="card-title text-muted">Tên sản phẩm</h5>
+                    <p id="price-preview" class="text-success fw-bold fs-4">0 VND</p>
+                    <p id="description-preview" class="text-muted small">Mô tả sản phẩm sẽ hiển thị ở đây...</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-cogs me-2"></i>
+                        Hành động
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg shadow-sm">
+                            <i class="fas fa-save me-2"></i>
+                            Lưu sản phẩm
+                        </button>
+                        <button type="button" class="btn btn-warning shadow-sm" onclick="previewProduct()">
+                            <i class="fas fa-eye me-2"></i>
+                            Xem trước
+                        </button>
+                        <button type="button" class="btn btn-info shadow-sm" onclick="fillDemoData()">
+                            <i class="fas fa-magic me-2"></i>
+                            Điền dữ liệu mẫu
+                        </button>
+                        <button type="reset" class="btn btn-secondary shadow-sm" onclick="resetForm()">
+                            <i class="fas fa-undo me-2"></i>
+                            Đặt lại
+                        </button>
+                        <a href="/list-products" class="btn btn-outline-secondary shadow-sm">
+                            <i class="fas fa-times me-2"></i>
+                            Hủy bỏ
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips Card -->
+            <div class="card shadow mb-4 border-left-info">
+                <div class="card-body">
+                    <div class="card-title h6 text-info">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Mẹo
+                    </div>
+                    <ul class="small text-muted mb-0">
+                        <li>Nhập tên sản phẩm rõ ràng, dễ hiểu</li>
+                        <li>Mô tả chi tiết để khách hàng hiểu rõ sản phẩm</li>
+                        <li>Chọn danh mục phù hợp</li>
+                        <li>Thêm nhiều biến thể để có nhiều lựa chọn</li>
+                        <li>Sử dụng hình ảnh chất lượng cao</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/js/product-create.js"></script>
+    <script>
+        let variantIndex = 0;
+
+        $(document).ready(function() {
+            // Add initial variant
+            addVariant();
+            
+            // Setup form validation
+            setupFormValidation();
+            
+            // Setup real-time preview
+            setupPreview();
+        });
+
+        function addVariant() {
+            const variantHtml = `
+                <div class="variant-item border rounded p-3 mb-3 adding" data-index="${variantIndex}" id="variant-${variantIndex}">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">Biến thể #${variantIndex + 1}</h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-variant" onclick="removeVariant(${variantIndex})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label small fw-bold">Màu sắc</label>
+                            <input name="Variants[${variantIndex}].Color" type="text" class="form-control form-control-sm" placeholder="Ví dụ: Xám Không Gian" value="">
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label small fw-bold">Kích thước</label>
+                            <input name="Variants[${variantIndex}].Size" type="text" class="form-control form-control-sm" placeholder="Ví dụ: 13 inch" value="">
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label small fw-bold">Số lượng</label>
+                            <input name="Variants[${variantIndex}].StockQuantity" type="number" class="form-control form-control-sm" value="0" min="0" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            $('#variants-container').append(variantHtml);
+            
+            // Remove adding class after animation
+            setTimeout(() => {
+                $(`#variant-${variantIndex}`).removeClass('adding');
+            }, 300);
+            
+            variantIndex++;
+            updateVariantNumbers();
+            
+            // Only show success message if not initial load
+            if (variantIndex > 1) {
+                showSuccess('Đã thêm biến thể mới');
+            }
+        }
+
+        function removeVariant(index) {
+            const variantElement = $(`.variant-item[data-index="${index}"]`);
+            
+            // Don't allow removing if it's the last variant
+            if ($('#variants-container .variant-item').length <= 1) {
+                showError('Phải có ít nhất một biến thể');
+                return;
+            }
+            
+            // Add removing animation
+            variantElement.addClass('removing');
+            
+            // Remove element after animation
+            setTimeout(() => {
+                variantElement.remove();
+                updateVariantNumbers();
+                showInfo('Đã xóa biến thể');
+            }, 300);
+        }
+
+        function updateVariantNumbers() {
+            $('#variants-container .variant-item').each(function(index) {
+                $(this).find('h6').text(`Biến thể #${index + 1}`);
+            });
+        }
+
+        function previewImage() {
+            const imageUrl = $('#Product_ImageUrl').val();
+            if (imageUrl && imageUrl.trim() !== '') {
+                $('#image-preview').attr('src', imageUrl);
+                $('#image-preview').removeClass('error');
+            } else {
+                $('#image-preview').attr('src', 'https://via.placeholder.com/200x200?text=Hình+ảnh+sản+phẩm');
+            }
+        }
+
+        function setupPreview() {
+            // Name preview
+            $('#Product_Name').on('input', function() {
+                const name = $(this).val().trim() || 'Tên sản phẩm';
+                $('#name-preview').text(name);
+            });
+
+            // Price preview
+            $('#Product_Price').on('input', function() {
+                const price = parseFloat($(this).val()) || 0;
+                $('#price-preview').text(price.toLocaleString('vi-VN') + ' VND');
+            });
+
+            // Description preview
+            $('#Product_Description').on('input', function() {
+                const desc = $(this).val().trim() || 'Mô tả sản phẩm sẽ hiển thị ở đây...';
+                const truncatedDesc = desc.length > 100 ? desc.substring(0, 100) + '...' : desc;
+                $('#description-preview').text(truncatedDesc);
+            });
+
+            // Image error handling
+            $('#image-preview').on('error', function() {
+                $(this).addClass('error');
+                $(this).attr('src', 'https://via.placeholder.com/200x200?text=Lỗi+tải+hình+ảnh');
+            });
+        }
+
+        function setupFormValidation() {
+            // Real-time validation
+            $('#Product_Name').on('blur', function() {
+                validateField($(this), 'Tên sản phẩm không được để trống');
+            });
+
+            $('#Product_Price').on('blur', function() {
+                const value = parseFloat($(this).val());
+                if (!value || value <= 0) {
+                    showFieldError($(this), 'Giá sản phẩm phải lớn hơn 0');
+                } else {
+                    showFieldSuccess($(this));
+                }
+            });
+
+            $('#Product_CategoryId').on('change', function() {
+                if ($(this).val() == '0' || !$(this).val()) {
+                    showFieldError($(this), 'Vui lòng chọn danh mục');
+                } else {
+                    showFieldSuccess($(this));
+                }
+            });
+
+            // Image URL validation
+            $('#Product_ImageUrl').on('blur', function() {
+                const url = $(this).val().trim();
+                if (url && !isValidUrl(url)) {
+                    showFieldError($(this), 'URL hình ảnh không hợp lệ');
+                } else if (url) {
+                    showFieldSuccess($(this));
+                    previewImage();
+                }
+            });
+
+            // Form submission validation
+            $('#productForm').on('submit', function(e) {
+                e.preventDefault(); // Prevent default submission first
+                
+                let isValid = true;
+                let firstErrorField = null;
+                
+                // Clear previous validation states
+                $('.form-control, .form-select').removeClass('is-invalid is-valid');
+                $('.invalid-feedback').remove();
+                
+                // Validate required fields
+                if (!$('#Product_Name').val().trim()) {
+                    showFieldError($('#Product_Name'), 'Vui lòng nhập tên sản phẩm');
+                    isValid = false;
+                    if (!firstErrorField) firstErrorField = $('#Product_Name');
+                }
+                
+                const priceValue = parseFloat($('#Product_Price').val());
+                if (!priceValue || priceValue <= 0) {
+                    showFieldError($('#Product_Price'), 'Vui lòng nhập giá sản phẩm hợp lệ (> 0)');
+                    isValid = false;
+                    if (!firstErrorField) firstErrorField = $('#Product_Price');
+                }
+                
+                if ($('#Product_CategoryId').val() == '0' || !$('#Product_CategoryId').val()) {
+                    showFieldError($('#Product_CategoryId'), 'Vui lòng chọn danh mục');
+                    isValid = false;
+                    if (!firstErrorField) firstErrorField = $('#Product_CategoryId');
+                }
+
+                // Validate image URL if provided
+                const imageUrl = $('#Product_ImageUrl').val().trim();
+                if (imageUrl && !isValidUrl(imageUrl)) {
+                    showFieldError($('#Product_ImageUrl'), 'URL hình ảnh không hợp lệ');
+                    isValid = false;
+                    if (!firstErrorField) firstErrorField = $('#Product_ImageUrl');
+                }
+
+                // Validate variants
+                const variants = $('#variants-container .variant-item');
+                let hasValidVariant = false;
+                let variantErrors = [];
+                
+                variants.each(function(index) {
+                    const $variant = $(this);
+                    const color = $variant.find('input[name*="Color"]').val().trim();
+                    const size = $variant.find('input[name*="Size"]').val().trim();
+                    const stockQuantity = parseInt($variant.find('input[name*="StockQuantity"]').val()) || 0;
+                    
+                    if (color && size) {
+                        hasValidVariant = true;
+                        // Validate stock quantity
+                        if (stockQuantity < 0) {
+                            $variant.find('input[name*="StockQuantity"]').addClass('is-invalid');
+                            variantErrors.push(`Biến thể #${index + 1}: Số lượng không được âm`);
+                        }
+                    } else if (color || size || stockQuantity > 0) {
+                        // Partial data - require both color and size
+                        if (!color) {
+                            $variant.find('input[name*="Color"]').addClass('is-invalid');
+                        }
+                        if (!size) {
+                            $variant.find('input[name*="Size"]').addClass('is-invalid');
+                        }
+                        variantErrors.push(`Biến thể #${index + 1}: Vui lòng nhập đầy đủ màu sắc và kích thước`);
+                    }
+                });
+                
+                if (!hasValidVariant) {
+                    showError('Vui lòng thêm ít nhất một biến thể với màu sắc và kích thước');
+                    isValid = false;
+                }
+                
+                if (variantErrors.length > 0) {
+                    showError('Lỗi biến thể: ' + variantErrors.join('; '));
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    // Scroll to first error
+                    if (firstErrorField) {
+                        $('html, body').animate({
+                            scrollTop: firstErrorField.offset().top - 100
+                        }, 500);
+                        firstErrorField.focus();
+                    }
+                    return false;
+                }
+                
+                // Show loading state
+                const submitBtn = $(this).find('button[type="submit"]');
+                const originalText = submitBtn.html();
+                submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...');
+                
+                // If validation passes, submit the form
+                this.submit();
+                
+                // Reset button after timeout (in case of error)
+                setTimeout(() => {
+                    submitBtn.prop('disabled', false).html(originalText);
+                }, 10000);
+            });
+        }
+
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function validateField(field, message) {
+            if (!field.val().trim()) {
+                showFieldError(field, message);
+                return false;
+            } else {
+                showFieldSuccess(field);
+                return true;
+            }
+        }
+
+        function showFieldError(field, message) {
+            field.removeClass('is-valid').addClass('is-invalid');
+            
+            // Remove existing feedback
+            field.siblings('.invalid-feedback').remove();
+            
+            // Add error message
+            field.after(`<div class="invalid-feedback">${message}</div>`);
+        }
+
+        function showFieldSuccess(field) {
+            field.removeClass('is-invalid').addClass('is-valid');
+            field.siblings('.invalid-feedback').remove();
+        }
+
+        function resetForm() {
+            if (confirm('Bạn có chắc chắn muốn đặt lại toàn bộ form?')) {
+                // Reset form
+                $('#productForm')[0].reset();
+                
+                // Clear validation states
+                $('.form-control, .form-select').removeClass('is-invalid is-valid');
+                $('.invalid-feedback').remove();
+                
+                // Reset variants
+                $('#variants-container').empty();
+                variantIndex = 0;
+                addVariant();
+                
+                // Reset preview
+                $('#image-preview').attr('src', 'https://via.placeholder.com/200x200?text=Hình+ảnh+sản+phẩm');
+                $('#name-preview').text('Tên sản phẩm');
+                $('#price-preview').text('0 VND');
+                $('#description-preview').text('Mô tả sản phẩm sẽ hiển thị ở đây...');
+                
+                showInfo('Đã đặt lại form');
+            }
+        }
+
+        // Auto-fill demo data function
+        function fillDemoData() {
+            if (confirm('Bạn có muốn điền dữ liệu mẫu để test không?')) {
+                $('#Product_Name').val('Laptop ABC Pro Max').trigger('input');
+                $('#Product_Description').val('Dòng laptop cao cấp với hiệu năng mạnh mẽ, màn hình Retina sắc nét và thiết kế kim loại nguyên khối sang trọng. Phù hợp cho công việc đồ họa và lập trình chuyên nghiệp.').trigger('input');
+                $('#Product_Price').val('35990000').trigger('input');
+                $('#Product_CategoryId').val('1').trigger('change');
+                $('#Product_ImageUrl').val('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500').trigger('input');
+                
+                // Clear existing variants and add demo variants
+                $('#variants-container').empty();
+                variantIndex = 0;
+                
+                // Add first variant
+                addVariant();
+                setTimeout(() => {
+                    $('input[name="Variants[0].Color"]').val('Xám Không Gian');
+                    $('input[name="Variants[0].Size"]').val('13 inch');
+                    $('input[name="Variants[0].StockQuantity"]').val('50');
+                }, 100);
+                
+                // Add second variant
+                setTimeout(() => {
+                    addVariant();
+                    setTimeout(() => {
+                        $('input[name="Variants[1].Color"]').val('Bạc');
+                        $('input[name="Variants[1].Size"]').val('15 inch');
+                        $('input[name="Variants[1].StockQuantity"]').val('35');
+                    }, 100);
+                }, 500);
+                
+                previewImage();
+                showSuccess('Đã điền dữ liệu mẫu');
+            }
+        }
+
+
+    </script>
+
+    <style>
+        .border-left-info {
+            border-left: 0.25rem solid #36b9cc !important;
+        }
+        
+        .variant-item {
+            background-color: #f8f9fc;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .variant-item:hover {
+            background-color: #eaecf4;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            border-color: #4e73df;
+        }
+        
+        .variant-item.removing {
+            animation: slideOut 0.3s ease-out forwards;
+        }
+
+        @@keyframes slideOut {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+                max-height: 200px;
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(100%);
+                max-height: 0;
+                margin-bottom: 0;
+                padding: 0;
+            }
+        }
+
+        .variant-item.adding {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        @@keyframes slideIn {
+            0% {
+                opacity: 0;
+                transform: translateX(-100%);
+                max-height: 0;
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+                max-height: 200px;
+            }
+        }
+        
+        .btn-remove-variant {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            border: none;
+            background: #e74a3b;
+            color: white;
+            opacity: 0;
+            transition: all 0.2s ease;
+            transform: scale(0.8);
+        }
+
+        .variant-item:hover .btn-remove-variant {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .btn-remove-variant:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(231, 74, 59, 0.3);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+            transform: translateY(-1px);
+        }
+        
+        .form-control, .form-select {
+            transition: all 0.2s ease;
+        }
+        
+        #image-preview {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid #dee2e6;
+        }
+        
+        #image-preview:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        #image-preview.error {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        
+        .btn {
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 12px rgba(78, 115, 223, 0.3);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 4px 12px rgba(28, 200, 138, 0.3);
+        }
+
+        .btn-outline-secondary:hover {
+            box-shadow: 0 4px 12px rgba(133, 135, 150, 0.3);
+        }
+
+        .card {
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        /* Loading animation */
+        @@keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* Success animation */
+        @@keyframes checkmark {
+            0% {
+                transform: scale(0);
+            }
+            50% {
+                transform: scale(1.3);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .success-icon {
+            animation: checkmark 0.6s ease-out;
+        }
+
+        /* Upload area enhancement */
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: #4e73df;
+            background: #e3f2fd;
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: #1cc88a;
+            background: #d4edda;
+            transform: scale(1.02);
+        }
+    </style>
 }

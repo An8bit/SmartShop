@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SmartShop.Infrastructure.ApiClients
 {
-    interface IApiClient
+    public interface IApiClient
     {
         Task<T> GetAsync<T>(string url);
         Task<T> PostAsync<T>(string url, object data);

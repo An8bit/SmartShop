@@ -1,12 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SmartShop.Core.Interfaces;
 
 namespace SmartShop.Web.Controllers
 {
     public class ProductController : Controller
     {
-        public IActionResult Index()
+        private readonly IProductService _productService;
+
+        public ProductController(IProductService productService)
         {
-            return View();
+            _productService = productService;
+        }
+
+       
+        public async Task<IActionResult> GetProducts()
+        {
+            var products = await _productService.GetAllProductsAsync();
+            return View("ListProducts", products);
         }
     }
 }

@@ -15,5 +15,6 @@ namespace SmartShop.Core.Interfaces
         Task<ProductDto> UpdateProductAsync(ProductDto productDto);
         Task<bool> DeleteProductAsync(int id);
         Task<IEnumerable<ProductDto>> GetProductsByCategoryAsync(int categoryId);
+        Task<List<CategoryDto>> GetCategoriesAsync();
     }
 }

@@ -9,17 +9,18 @@ namespace SmartShop.Web.Pages.Products
     {
         private readonly IProductService _productService = productService;
 
-        public required IList<ProductDto> Products { get; set; }
+        public IList<ProductDto> Products { get; set; } = new List<ProductDto>();
         public async Task OnGetAsync()
         {
             try
             {
                 var result = await _productService.GetAllProductsAsync();
-                Products = result.ToList();
+                Products = result?.ToList() ?? new List<ProductDto>();
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"L?i khi t?i danh s·ch s?n ph?m: {ex.Message}";
+                TempData["ErrorMessage"] = $"L·ªói khi t·∫£i danh s√°ch s·∫£n ph·∫©m: {ex.Message}";
+                Products = new List<ProductDto>(); // ƒê·∫£m b·∫£o Products kh√¥ng null
             }
         }
         public async Task<IActionResult> OnPostDeleteAsync(int id)
@@ -29,16 +30,16 @@ namespace SmartShop.Web.Pages.Products
                 var result = await _productService.DeleteProductAsync(id);
                 if (result)
                 {
-                    TempData["SuccessMessage"] = "XÛa s?n ph?m th‡nh cÙng";
+                    TempData["SuccessMessage"] = "XÔøΩa s?n ph?m thÔøΩnh cÔøΩng";
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "KhÙng th? xÛa s?n ph?m";
+                    TempData["ErrorMessage"] = "KhÔøΩng th? xÔøΩa s?n ph?m";
                 }
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"L?i khi xÛa s?n ph?m: {ex.Message}";
+                TempData["ErrorMessage"] = $"L?i khi xÔøΩa s?n ph?m: {ex.Message}";
             }
 
             return RedirectToPage();

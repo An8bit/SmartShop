@@ -10,10 +10,11 @@ namespace SmartShop.Web.MappingProfiles
         {
             // DTO to ViewModel
             CreateMap<ProductDto, ProductViewModel>();
-           
+
 
             // ViewModel to DTO
             CreateMap<ProductViewModel, ProductDto>();
+           
            
         }
     }

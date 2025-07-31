@@ -2,6 +2,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages(); // Thêm Razor Pages support
+builder.Services.AddHttpClient("ApiClient");
+builder.Services.AddScoped<SmartShop.Infrastructure.ApiClients.IApiClient, SmartShop.Infrastructure.ApiClients.ApiClient>();
+builder.Services.AddScoped<SmartShop.Core.Interfaces.IProductService, SmartShop.Infrastructure.Services.ProductService>();
 
 var app = builder.Build();
 
@@ -23,5 +27,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapRazorPages(); // Thêm routing cho Razor Pages
 
 app.Run();

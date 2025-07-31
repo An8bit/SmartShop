@@ -11,14 +11,29 @@ namespace SmartShop.Infrastructure.ApiClients
     {
         private readonly HttpClient _httpClient;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _baseUrl;
+
         public ApiClient(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
             _httpClient = _httpClientFactory.CreateClient("ApiClient");
+            _baseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:5000";
+            
+            // Set base address if not already set
+            if (_httpClient.BaseAddress == null)
+            {
+                _httpClient.BaseAddress = new Uri(_baseUrl);
+            }
         }
-        public Task DeleteAsync(string url)
+        public async Task DeleteAsync(string url)
         {
-            throw new NotImplementedException();
+            var response = await _httpClient.DeleteAsync(url);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"API request failed with status {response.StatusCode}: {errorContent}");
+            }
         }
 
         public async Task<T> GetAsync<T>(string url)
@@ -34,9 +49,20 @@ namespace SmartShop.Infrastructure.ApiClients
             return await response.Content.ReadFromJsonAsync<T>();
         }
 
-        public Task<T> PostAsync<T>(string url, object data)
+        public async Task<T> PostAsync<T>(string url, object data)
         {
-            throw new NotImplementedException();
+            var json = JsonSerializer.Serialize(data);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            
+            var response = await _httpClient.PostAsync(url, content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"API request failed with status {response.StatusCode}: {errorContent}");
+            }
+
+            return await response.Content.ReadFromJsonAsync<T>() ?? throw new InvalidOperationException("Response content is null");
         }
 
         public Task<T> PutAsync<T>(string url, object data)
