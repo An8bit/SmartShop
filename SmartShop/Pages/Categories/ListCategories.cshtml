@@ -1,0 +1,64 @@
+﻿@page "/list-categories"
+@model SmartShop.Web.Pages.Categories.ListCategoriesModel
+@{
+    ViewData["Title"] = "Danh sách danh mục";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<<h2>Danh sách danh mục</h2>
+
+<div class="mb-3">
+    <a href="/create-categories" class="btn btn-primary">+ Thêm danh mục</a>
+</div>
+
+<!-- Alert Messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Tên danh mục</th>
+            <th>Mô tả</th>
+            <th>Danh mục cha</th>
+            <th>Số sản phẩm</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var category in Model.Categories)
+        {
+            <tr>
+                <td>@category.CategoryId</td>
+                <td>@category.CategoryName</td>
+                <td>@category.Description</td>
+                <td>
+                    @(category.ParentCategoryId.HasValue ? category.ParentCategoryId.ToString() : "Không có")
+                </td>
+                <td>@category.ProductCount</td>
+                <td>
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@category.CategoryId" onsubmit="return confirm('Bạn có chắc chắn muốn xóa danh mục này?');">
+                        <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
