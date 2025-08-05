@@ -1,4 +1,4 @@
-﻿@page "/create-product"
+﻿@page
 @model SmartShop.Web.Pages.Products.ProductCreateModel
 @{
     ViewData["Title"] = "Thêm sản phẩm mới";
@@ -139,7 +139,7 @@
                 </div>
                 <div class="card-body text-center">
                     <div class="mb-3">
-                        <img id="image-preview" src="https://via.placeholder.com/200x200?text=Hình+ảnh+sản+phẩm" 
+                        <img id="image-preview" src="https://via.placeholder.com/200x200?text=Hình+ảnh+sản+phẩm"
                              class="img-fluid rounded shadow" style="max-width: 200px; max-height: 200px; object-fit: cover;">
                     </div>
                     <h5 id="name-preview" class="card-title text-muted">Tên sản phẩm</h5>
@@ -210,10 +210,10 @@
         $(document).ready(function() {
             // Add initial variant
             addVariant();
-            
+
             // Setup form validation
             setupFormValidation();
-            
+
             // Setup real-time preview
             setupPreview();
         });
@@ -243,17 +243,17 @@
                     </div>
                 </div>
             `;
-            
+
             $('#variants-container').append(variantHtml);
-            
+
             // Remove adding class after animation
             setTimeout(() => {
                 $(`#variant-${variantIndex}`).removeClass('adding');
             }, 300);
-            
+
             variantIndex++;
             updateVariantNumbers();
-            
+
             // Only show success message if not initial load
             if (variantIndex > 1) {
                 showSuccess('Đã thêm biến thể mới');
@@ -262,16 +262,16 @@
 
         function removeVariant(index) {
             const variantElement = $(`.variant-item[data-index="${index}"]`);
-            
+
             // Don't allow removing if it's the last variant
             if ($('#variants-container .variant-item').length <= 1) {
                 showError('Phải có ít nhất một biến thể');
                 return;
             }
-            
+
             // Add removing animation
             variantElement.addClass('removing');
-            
+
             // Remove element after animation
             setTimeout(() => {
                 variantElement.remove();
@@ -360,28 +360,28 @@
             // Form submission validation
             $('#productForm').on('submit', function(e) {
                 e.preventDefault(); // Prevent default submission first
-                
+
                 let isValid = true;
                 let firstErrorField = null;
-                
+
                 // Clear previous validation states
                 $('.form-control, .form-select').removeClass('is-invalid is-valid');
                 $('.invalid-feedback').remove();
-                
+
                 // Validate required fields
                 if (!$('#Product_Name').val().trim()) {
                     showFieldError($('#Product_Name'), 'Vui lòng nhập tên sản phẩm');
                     isValid = false;
                     if (!firstErrorField) firstErrorField = $('#Product_Name');
                 }
-                
+
                 const priceValue = parseFloat($('#Product_Price').val());
                 if (!priceValue || priceValue <= 0) {
                     showFieldError($('#Product_Price'), 'Vui lòng nhập giá sản phẩm hợp lệ (> 0)');
                     isValid = false;
                     if (!firstErrorField) firstErrorField = $('#Product_Price');
                 }
-                
+
                 if ($('#Product_CategoryId').val() == '0' || !$('#Product_CategoryId').val()) {
                     showFieldError($('#Product_CategoryId'), 'Vui lòng chọn danh mục');
                     isValid = false;
@@ -400,13 +400,13 @@
                 const variants = $('#variants-container .variant-item');
                 let hasValidVariant = false;
                 let variantErrors = [];
-                
+
                 variants.each(function(index) {
                     const $variant = $(this);
                     const color = $variant.find('input[name*="Color"]').val().trim();
                     const size = $variant.find('input[name*="Size"]').val().trim();
                     const stockQuantity = parseInt($variant.find('input[name*="StockQuantity"]').val()) || 0;
-                    
+
                     if (color && size) {
                         hasValidVariant = true;
                         // Validate stock quantity
@@ -425,12 +425,12 @@
                         variantErrors.push(`Biến thể #${index + 1}: Vui lòng nhập đầy đủ màu sắc và kích thước`);
                     }
                 });
-                
+
                 if (!hasValidVariant) {
                     showError('Vui lòng thêm ít nhất một biến thể với màu sắc và kích thước');
                     isValid = false;
                 }
-                
+
                 if (variantErrors.length > 0) {
                     showError('Lỗi biến thể: ' + variantErrors.join('; '));
                     isValid = false;
@@ -446,15 +446,15 @@
                     }
                     return false;
                 }
-                
+
                 // Show loading state
                 const submitBtn = $(this).find('button[type="submit"]');
                 const originalText = submitBtn.html();
                 submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...');
-                
+
                 // If validation passes, submit the form
                 this.submit();
-                
+
                 // Reset button after timeout (in case of error)
                 setTimeout(() => {
                     submitBtn.prop('disabled', false).html(originalText);
@@ -483,10 +483,10 @@
 
         function showFieldError(field, message) {
             field.removeClass('is-valid').addClass('is-invalid');
-            
+
             // Remove existing feedback
             field.siblings('.invalid-feedback').remove();
-            
+
             // Add error message
             field.after(`<div class="invalid-feedback">${message}</div>`);
         }
@@ -500,22 +500,22 @@
             if (confirm('Bạn có chắc chắn muốn đặt lại toàn bộ form?')) {
                 // Reset form
                 $('#productForm')[0].reset();
-                
+
                 // Clear validation states
                 $('.form-control, .form-select').removeClass('is-invalid is-valid');
                 $('.invalid-feedback').remove();
-                
+
                 // Reset variants
                 $('#variants-container').empty();
                 variantIndex = 0;
                 addVariant();
-                
+
                 // Reset preview
                 $('#image-preview').attr('src', 'https://via.placeholder.com/200x200?text=Hình+ảnh+sản+phẩm');
                 $('#name-preview').text('Tên sản phẩm');
                 $('#price-preview').text('0 VND');
                 $('#description-preview').text('Mô tả sản phẩm sẽ hiển thị ở đây...');
-                
+
                 showInfo('Đã đặt lại form');
             }
         }
@@ -528,11 +528,11 @@
                 $('#Product_Price').val('35990000').trigger('input');
                 $('#Product_CategoryId').val('1').trigger('change');
                 $('#Product_ImageUrl').val('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500').trigger('input');
-                
+
                 // Clear existing variants and add demo variants
                 $('#variants-container').empty();
                 variantIndex = 0;
-                
+
                 // Add first variant
                 addVariant();
                 setTimeout(() => {
@@ -540,7 +540,7 @@
                     $('input[name="Variants[0].Size"]').val('13 inch');
                     $('input[name="Variants[0].StockQuantity"]').val('50');
                 }, 100);
-                
+
                 // Add second variant
                 setTimeout(() => {
                     addVariant();
@@ -550,7 +550,7 @@
                         $('input[name="Variants[1].StockQuantity"]').val('35');
                     }, 100);
                 }, 500);
-                
+
                 previewImage();
                 showSuccess('Đã điền dữ liệu mẫu');
             }
@@ -563,7 +563,7 @@
         .border-left-info {
             border-left: 0.25rem solid #36b9cc !important;
         }
-        
+
         .variant-item {
             background-color: #f8f9fc;
             border: 1px solid #dee2e6;
@@ -575,17 +575,17 @@
             transform: translateX(0);
             opacity: 1;
         }
-        
-        .variant-item:hover {
-            background-color: #eaecf4;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-            border-color: #4e73df;
-        }
-        
-        .variant-item.removing {
-            animation: slideOut 0.3s ease-out forwards;
-        }
+
+            .variant-item:hover {
+                background-color: #eaecf4;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                transform: translateY(-2px);
+                border-color: #4e73df;
+            }
+
+            .variant-item.removing {
+                animation: slideOut 0.3s ease-out forwards;
+            }
 
         @@keyframes slideOut {
             0% {
@@ -593,6 +593,7 @@
                 transform: translateX(0);
                 max-height: 200px;
             }
+
             100% {
                 opacity: 0;
                 transform: translateX(100%);
@@ -612,13 +613,14 @@
                 transform: translateX(-100%);
                 max-height: 0;
             }
+
             100% {
                 opacity: 1;
                 transform: translateX(0);
                 max-height: 200px;
             }
         }
-        
+
         .btn-remove-variant {
             position: absolute;
             top: 10px;
@@ -647,41 +649,41 @@
             transform: scale(1.1);
             box-shadow: 0 2px 8px rgba(231, 74, 59, 0.3);
         }
-        
+
         .form-control:focus, .form-select:focus {
             border-color: #4e73df;
             box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
             transform: translateY(-1px);
         }
-        
+
         .form-control, .form-select {
             transition: all 0.2s ease;
         }
-        
+
         #image-preview {
             transition: all 0.3s ease;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             border: 2px solid #dee2e6;
         }
-        
-        #image-preview:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
 
-        #image-preview.error {
-            border-color: #dc3545;
-            background-color: #f8d7da;
-        }
-        
+            #image-preview:hover {
+                transform: scale(1.05);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            }
+
+            #image-preview.error {
+                border-color: #dc3545;
+                background-color: #f8d7da;
+            }
+
         .btn {
             transition: all 0.2s ease;
         }
 
-        .btn:hover {
-            transform: translateY(-1px);
-        }
+            .btn:hover {
+                transform: translateY(-1px);
+            }
 
         .btn-primary:hover {
             box-shadow: 0 4px 12px rgba(78, 115, 223, 0.3);
@@ -699,18 +701,20 @@
             transition: all 0.3s ease;
         }
 
-        .card:hover {
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
+            .card:hover {
+                box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            }
 
         /* Loading animation */
         @@keyframes pulse {
             0% {
                 opacity: 1;
             }
+
             50% {
                 opacity: 0.5;
             }
+
             100% {
                 opacity: 1;
             }
@@ -725,9 +729,11 @@
             0% {
                 transform: scale(0);
             }
+
             50% {
                 transform: scale(1.3);
             }
+
             100% {
                 transform: scale(1);
             }
@@ -750,16 +756,16 @@
             overflow: hidden;
         }
 
-        .upload-area:hover {
-            border-color: #4e73df;
-            background: #e3f2fd;
-            transform: translateY(-2px);
-        }
+            .upload-area:hover {
+                border-color: #4e73df;
+                background: #e3f2fd;
+                transform: translateY(-2px);
+            }
 
-        .upload-area.dragover {
-            border-color: #1cc88a;
-            background: #d4edda;
-            transform: scale(1.02);
-        }
+            .upload-area.dragover {
+                border-color: #1cc88a;
+                background: #d4edda;
+                transform: scale(1.02);
+            }
     </style>
 }

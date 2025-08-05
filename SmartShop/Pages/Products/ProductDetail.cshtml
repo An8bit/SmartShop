@@ -1,0 +1,103 @@
+﻿@page
+@model SmartShop.Web.Pages.Products.ProductDetailModel
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm";
+    var product = Model.Product;
+}
+
+@if (product == null)
+{
+    <div class="alert alert-danger mt-4">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        Không tìm thấy sản phẩm.
+    </div>
+}
+else
+{
+    <div class="product-container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="/Products/ListProducts" class="text-decoration-none">Sản phẩm</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@product.Name</li>
+            </ol>
+        </nav>
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="product-image-wrapper">
+                    <div class="product-image loading">
+                        <img src="@(product.ImageUrl ?? "/images/default-product.png")"
+                             alt="@product.Name"
+                             class="rounded-3"
+                             loading="lazy"
+                             decoding="async"
+                             onerror="this.src='/images/default-product.png'; this.parentElement.classList.remove('loading')"
+                             onload="this.parentElement.classList.remove('loading')">
+                    </div>
+                    @if (product.DiscountPercentage.HasValue)
+                    {
+                        <div class="product-badges">
+                            <div class="product-badge discount">
+                                -@(product.DiscountPercentage.Value.ToString("0"))%
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="product-info d-flex flex-column h-100">
+                    <h1 class="product-title">@product.Name</h1>
+                    @if (!string.IsNullOrEmpty(product.Description))
+                    {
+                        <p class="text-muted">@product.Description</p>
+                    }
+                    <div class="product-price-wrapper">
+                        <span class="product-price">@product.Price.ToString("N0") VND</span>
+                        @if (product.OriginalPrice.HasValue && product.OriginalPrice != product.Price)
+                        {
+                            <span class="product-original-price">@product.OriginalPrice.Value.ToString("N0") VND</span>
+                        }
+                        @if (product.DiscountPercentage.HasValue)
+                        {
+                            <span class="product-discount">-@(product.DiscountPercentage.Value.ToString("0"))%</span>
+                        }
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-primary">@(product.CategoryName ?? "N/A")</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Ngày tạo:</strong> @product.CreatedAt.ToString("dd/MM/yyyy")
+                    </div>
+                    @if (product.Variants != null && product.Variants.Any())
+                    {
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">Phiên bản sản phẩm</h5>
+                            <div class="product-variants">
+                                @foreach (var variant in product.Variants)
+                                {
+                                    <div class="variant-card">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="badge bg-secondary me-2">@variant.Color</span>
+                                                <span class="badge bg-info">@variant.Size</span>
+                                            </div>
+                                            <span class="badge bg-success rounded-pill">
+                                                <i class="fas fa-cubes me-1"></i>
+                                                @variant.StockQuantity
+                                            </span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    <div class="mt-auto">
+                        <a asp-page="/Products/ListProducts" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

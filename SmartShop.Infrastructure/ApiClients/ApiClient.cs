@@ -53,7 +53,7 @@ namespace SmartShop.Infrastructure.ApiClients
         {
             var json = JsonSerializer.Serialize(data);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            
+
             var response = await _httpClient.PostAsync(url, content);
 
             if (!response.IsSuccessStatusCode)
@@ -64,6 +64,7 @@ namespace SmartShop.Infrastructure.ApiClients
 
             return await response.Content.ReadFromJsonAsync<T>() ?? throw new InvalidOperationException("Response content is null");
         }
+
 
         public Task<T> PutAsync<T>(string url, object data)
         {

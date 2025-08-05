@@ -52,15 +52,15 @@ namespace SmartShop.Infrastructure.Services
             {
                 // Log exception nếu cần
                 Console.WriteLine($"Error calling API: {ex.Message}");
-                
+
                 // Trả về empty list thay vì mock data để có thể debug API issue
                 return new List<ProductDto>();
             }
         }
 
-        public Task<ProductDto> GetProductByIdAsync(int id)
+        public async Task<ProductDto> GetProductByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _apiClient.GetAsync<ProductDto>("api/Products/" + id);
         }
 
         public Task<IEnumerable<ProductDto>> GetProductsByCategoryAsync(int categoryId)
@@ -68,10 +68,20 @@ namespace SmartShop.Infrastructure.Services
             throw new NotImplementedException();
         }
 
-        public Task<ProductDto> UpdateProductAsync(ProductDto productDto)
+        public async Task<ProductDto> UpdateProductAsync(ProductDto productDto)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return await _apiClient.PutAsync<ProductDto>($"api/Products/{productDto.ProductId}", productDto);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error updating product: {ex.Message}", ex);
+            }
         }
+
+
+
 
         public async Task<List<CategoryDto>> GetCategoriesAsync()
         {
@@ -83,7 +93,7 @@ namespace SmartShop.Infrastructure.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Error getting categories from API: {ex.Message}");
-                
+
                 // Return default categories if API fails
                 return new List<CategoryDto>
                 {

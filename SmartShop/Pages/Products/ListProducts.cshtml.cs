@@ -23,26 +23,22 @@ namespace SmartShop.Web.Pages.Products
                 Products = new List<ProductDto>(); // Đảm bảo Products không null
             }
         }
+
         public async Task<IActionResult> OnPostDeleteAsync(int id)
         {
             try
             {
                 var result = await _productService.DeleteProductAsync(id);
-                if (result)
-                {
-                    TempData["SuccessMessage"] = "X�a s?n ph?m th�nh c�ng";
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "Kh�ng th? x�a s?n ph?m";
-                }
+                TempData[result ? "SuccessMessage" : "ErrorMessage"] =
+                    result ? "Xóa sản phẩm thành công" : "Không thể xóa sản phẩm. Vui lòng thử lại.";
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"L?i khi x�a s?n ph?m: {ex.Message}";
+                TempData["ErrorMessage"] = $"Lỗi khi xóa sản phẩm: {ex.Message}";
             }
 
             return RedirectToPage();
         }
+
     }
 }
