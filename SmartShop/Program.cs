@@ -9,6 +9,7 @@ builder.Services.AddHttpClient("ApiClient");
 builder.Services.AddScoped<SmartShop.Infrastructure.ApiClients.IApiClient, SmartShop.Infrastructure.ApiClients.ApiClient>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoriesService>();
+builder.Services.AddScoped<IDiscountService, DiscountService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
