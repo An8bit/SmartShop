@@ -1,0 +1,116 @@
+@page "{id:int}"
+@model SmartShop.Web.Pages.Products.ProductEditModel
+@{
+    ViewData["Title"] = "Chỉnh sửa sản phẩm";
+}
+
+<h1 class="mb-4"><i class="fas fa-edit me-2"></i>Chỉnh sửa sản phẩm</h1>
+
+<form method="post" asp-page-handler="Edit" class="needs-validation" novalidate>
+
+    <input type="hidden" asp-for="Product.ProductId" />
+
+    <div class="mb-3">
+        <label asp-for="Product.Name" class="form-label"></label>
+        <input asp-for="Product.Name" class="form-control" required />
+        <span asp-validation-for="Product.Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Product.Description" class="form-label"></label>
+        <textarea asp-for="Product.Description" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Product.Description" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Product.Price" class="form-label"></label>
+        <input asp-for="Product.Price" class="form-control" type="number" step="1000" required />
+        <span asp-validation-for="Product.Price" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Product.ImageUrl" class="form-label"></label>
+        <input asp-for="Product.ImageUrl" class="form-control" />
+        <span asp-validation-for="Product.ImageUrl" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Product.CategoryId" class="form-label">Danh mục</label>
+        <select asp-for="Product.CategoryId" class="form-select" asp-items="@(new SelectList(Model.Categories, "CategoryId", "CategoryName"))">
+            <option value="">-- Chọn danh mục --</option>
+        </select>
+        <span asp-validation-for="Product.CategoryId" class="text-danger"></span>
+    </div>
+
+    <h5 class="mb-3">Biến thể sản phẩm (Variants)</h5>
+    <div id="variant-container">
+        @for (int i = 0; i < Model.Variants.Count; i++)
+        {
+            <div class="border p-3 mb-3 position-relative variant-item">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Màu sắc</label>
+                        <input name="Variants[@i].Color" value="@Model.Variants[i].Color" class="form-control" required />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Kích thước</label>
+                        <input name="Variants[@i].Size" value="@Model.Variants[i].Size" class="form-control" required />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Tồn kho</label>
+                        <input name="Variants[@i].StockQuantity" value="@Model.Variants[i].StockQuantity" type="number" min="0" class="form-control" required />
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeVariant(this)">X</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <button type="button" class="btn btn-secondary mb-3" onclick="addVariant()">+ Thêm biến thể</button>
+
+    <div>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-2"></i>Lưu thay đổi
+        </button>
+        <a asp-page="./ListProducts" class="btn btn-secondary ms-2">Quay lại</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function addVariant() {
+            const container = document.getElementById('variant-container');
+            const index = container.children.length;
+
+            const html = `
+                <div class="border p-3 mb-3 position-relative variant-item">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Màu sắc</label>
+                            <input name="Variants[${index}].Color" class="form-control" required />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Kích thước</label>
+                            <input name="Variants[${index}].Size" class="form-control" required />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Tồn kho</label>
+                            <input name="Variants[${index}].StockQuantity" type="number" min="0" class="form-control" required />
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeVariant(this)">X</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        function removeVariant(btn) {
+            btn.closest('.variant-item').remove();
+        }
+    </script>
+}

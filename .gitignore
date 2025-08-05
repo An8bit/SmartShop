@@ -1,0 +1,11 @@
+bin/
+obj/
+*.csproj.user
+*.suo
+*.user
+*.sln.docstates
+*.sln.patch
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+*.vs/
